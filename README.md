@@ -1,96 +1,155 @@
-# FrogPaste for LinkedIn — 0.4.0
+# FrogPaste for LinkedIn
 
-Cole imagens sem salvar arquivos. **Em publicações, esta versão reúne as colagens numa bandeja e só entrega o lote ao clicar em Anexar todas.**
+> Paste images directly from your clipboard into LinkedIn — without saving them first.
 
-## Atualizar e usar
+FrogPaste is a Firefox WebExtension that makes image attachments in LinkedIn less frustrating. It handles user-initiated image pastes and, in the post composer, lets you collect multiple images in a small review tray before handing them to LinkedIn's own upload field.
 
-1. Em `about:debugging#/runtime/this-firefox`, remova a versão temporária anterior.
-2. Clique em **Carregar extensão temporária** e selecione o ZIP 0.4.0, ou extraia o ZIP e selecione `manifest.json`.
-3. Recarregue o LinkedIn para substituir os scripts antigos.
-4. Abra uma **publicação nova**, sem imagens previamente anexadas, para testar o fluxo completo.
-5. Copie uma imagem e dê Ctrl+V no editor. Ela aparece na bandeja do FrogPaste.
-6. Copie outra imagem e dê Ctrl+V novamente. Repita até todas aparecerem na bandeja. É possível mudar de aba para copiar cada uma.
-7. Clique em **Anexar todas (N)**. O lote é entregue ao seletor de imagens do LinkedIn em uma única operação.
-8. Confira as miniaturas no próprio LinkedIn e continue a publicação normalmente.
+**Current version:** 0.4.0  
+**Platform:** Firefox  
+**Format:** Manifest V3  
+**Status:** Experimental
 
-O botão Anexar todas não publica a postagem. A bandeja permite remover imagens pelo × ou cancelar todo o lote. Fechar o editor, sair da página, recarregar ou pressionar Esc descarta a bandeja. Trocar de aba não a descarta.
+> [!WARNING]
+> The local test suite passes, but version 0.4.0 has not yet been validated in an authenticated LinkedIn session. LinkedIn can change its markup and upload flow at any time, so real-site compatibility is not guaranteed.
 
-Na 0.4.0, a bandeja é inserida dentro do diálogo da publicação. Isso a mantém acima do backdrop escuro e faz o clique permanecer dentro do editor; o LinkedIn não interpreta o botão como um clique fora da publicação. Ela também captura o foco e os eventos de ponteiro na borda do componente depois que seus próprios botões recebem o evento.
+## Features
 
-Se o LinkedIn ainda não criou o seletor, a bandeja informa que o lote está pronto: clique no botão de adicionar imagens do LinkedIn para abrir o campo. Se o campo identificado não aceitar o formato ou a quantidade, o lote permanece na bandeja para revisão.
+- Paste screenshots and other clipboard images directly into LinkedIn.
+- Collect multiple images from successive pastes in a publication tray.
+- Switch tabs or applications while building the batch.
+- Review thumbnails and remove individual images before attaching them.
+- Attach the complete batch with one click.
+- Keep normal text and HTML pastes untouched.
+- Work with image MIME types received from the clipboard without forced PNG conversion.
+- Leave the final upload and publication action under the user's control.
 
-A instalação temporária é removida ao reiniciar o Firefox. Uma instalação permanente no Firefox comum exige assinatura da Mozilla. Guia oficial: https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/
+In LinkedIn messages and comments, the extension keeps the direct single-image handoff used by earlier versions. The multi-image tray is focused on the publication composer, where LinkedIn normally keeps only the first pasted image.
 
-## Por que o fluxo mudou
+## How to use
 
-O usuário relatou que a 0.2.0 ainda mantinha apenas a primeira imagem numa publicação, apesar dos testes locais. A hipótese de reutilizar o campo de upload depois de cada colagem não foi confirmada no LinkedIn real.
+1. Open LinkedIn and start a new publication.
+2. Copy an image from any application.
+3. Focus the publication editor and press Ctrl+V.
+4. Copy and paste additional images. You can switch tabs between pastes.
+5. Review the FrogPaste tray. Remove unwanted images with × if necessary.
+6. Click **Anexar todas (N)**.
+7. Check the thumbnails in LinkedIn and publish manually when ready.
 
-A 0.3.0 evita depender desse passo para o primeiro lote: reúne todas as imagens antes de iniciar o upload. A 0.4.0 corrige a montagem da bandeja no topo do diálogo, porque a versão anterior aparecia atrás do backdrop e o clique fechava a caixa de publicação.
+The button does not publish the post. It only passes the selected batch to LinkedIn's file input.
 
-Cada imagem do lote recebe um nome virtual exclusivo, mantendo seus bytes e MIME. Imagens diferentes vindas do clipboard frequentemente têm o mesmo nome, como `image.png`; os nomes exclusivos evitam essa colisão. Isso é uma medida de compatibilidade, não uma confirmação de que esse era o motivo da falha anterior.
+If LinkedIn has not created its file input yet, FrogPaste keeps the batch ready and asks you to click LinkedIn's **Adicionar imagem** button. If no publication editor is open, the extension shows a notice instead of hijacking an unrelated text field.
 
-Em mensagens e comentários, permanece o encaminhamento direto da 0.2.0 para o campo identificado. Esta mudança de fluxo foi feita para publicações e diálogos de imagens reconhecidos.
+Closing the composer, navigating away, reloading the page, or pressing Esc discards the current tray. Switching tabs does not discard it.
 
-## Formatos e limites
+## Installation
 
-Qualquer MIME `image/*` é reconhecido. Não há restrição a screenshots nem conversão forçada para PNG. Quando o MIME está vazio ou genérico, extensões conhecidas de arquivo ajudam na identificação.
+### Temporary installation for testing
 
-O aplicativo de origem, o sistema ou o navegador podem converter a imagem antes da colagem. A extensão preserva o conteúdo efetivamente recebido; não recupera um formato ou animação que não esteja no clipboard.
+1. Download or clone this repository.
+2. Open **about:debugging#/runtime/this-firefox** in Firefox.
+3. Click **Load Temporary Add-on…**.
+4. Select the repository's **manifest.json** file.
+5. Reload LinkedIn and open a new publication.
 
-O campo de destino precisa aceitar todos os formatos e permitir múltiplos arquivos quando o lote tiver mais de um. A extensão não altera o atributo `multiple`, não reduz um lote silenciosamente e não contorna os limites do servidor. O LinkedIn continua responsável pela validação final.
+Temporary add-ons are removed when Firefox restarts. This is the easiest way to test changes locally.
 
-O novo fluxo é destinado a anexar o lote completo a uma publicação. Adicionar um segundo lote a imagens que o LinkedIn já processou ainda depende do comportamento do seu editor. Prefira reunir todas as imagens na bandeja antes de clicar em Anexar todas.
+### Permanent installation
 
-Texto e HTML sem arquivos de imagem seguem a colagem normal. Uma URL isolada não é baixada. Se a colagem contiver arquivos de imagem, eles têm prioridade sobre o texto/HTML acompanhante.
+Firefox Release and Beta require Mozilla-signed extensions. For a persistent installation, submit the package to Mozilla Add-ons as a self-distributed (unlisted) extension, download the signed XPI, and install it through **about:addons**.
 
-## Dados
+Renaming a ZIP file to XPI does not sign it and is not enough for a normal Firefox installation. See Mozilla's [signing and distribution guide](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/).
 
-O código executa somente em `https://www.linkedin.com/*`. Usa os arquivos do evento de colagem iniciado pelo usuário, sem permissão `clipboardRead` ou leitura periódica do clipboard.
+## Supported images and limits
 
-A bandeja mantém referências aos arquivos e URLs locais para as miniaturas enquanto a publicação está aberta. Não há servidor próprio, telemetria, gravação das imagens em disco ou armazenamento permanente. As URLs de prévia são liberadas ao remover imagens ou fechar a bandeja.
+FrogPaste recognizes image files received from the clipboard with an **image/** MIME type. Common formats include PNG, JPEG, GIF, WebP, AVIF, BMP, TIFF, SVG, ICO, HEIC/HEIF, and JPEG XL when the source provides a compatible type or filename.
 
-Ao anexar, o upload normal do LinkedIn pode começar. A extensão não clica em publicar ou enviar.
+The extension preserves the file bytes and MIME information it receives. It does not:
 
-## Validação e limitação
+- download isolated image URLs;
+- read the clipboard periodically;
+- re-encode images through a canvas;
+- silently reduce the number of images in a batch;
+- change LinkedIn's file-size, format, or server-side limits.
 
-**Esta versão ainda não foi validada em uma sessão real autenticada do LinkedIn.** Os testes locais verificam a coleta e a entrega do lote, não a aceitação pelo backend do site.
+The destination field must accept the selected format and, for a batch, multiple files. LinkedIn remains responsible for the final validation and upload. Adding a second batch after LinkedIn has already processed the first is dependent on the site's current editor behavior, so collecting the complete batch before clicking **Anexar todas** is recommended.
 
-Foram aprovados 31 testes: leitura e compatibilidade de arquivos, colagens sucessivas, lotes, montagem dentro do modal, proteção contra clique fora, aviso sem publicação aberta, campos que desaparecem após receber os arquivos, nomes repetidos, troca de aba, remoção e cancelamento. Um teste separado do clipboard real de imagens do sistema não foi executado porque o ambiente sem interface gráfica não reteve esse conteúdo.
+Text-only and HTML-only pastes continue through the browser's normal paste behavior. When a paste contains image files, the image files take priority for FrogPaste handling.
 
-Os testes DOM usam Firefox 153 com páginas locais e tráfego de página interceptado. Os arquivos e eventos de visibilidade são simulados. O teste de teclado usa eventos Ctrl+V reais com conteúdo de clipboard fornecido pela fixture. Nenhum desses testes usa uma conta do LinkedIn ou representa uma confirmação de funcionamento no site real.
+## Privacy and permissions
 
-O Console do navegador registra `FrogPaste 0.4.0 — lote entregue ao seletor` com apenas quantidade de imagens, quantidade de arquivos selecionados, `multiple` e `accept`. Esses dados ajudam a identificar se o lote chegou ao campo; não incluem bytes ou nomes das imagens e não comprovam que o upload terminou.
+FrogPaste is intentionally narrow in scope:
 
-## Testes locais
+- It runs only on pages matching **https://www.linkedin.com/**.
+- It reads files from a trusted, user-initiated paste event.
+- It does not request the **clipboardRead** permission.
+- It does not poll or monitor the system clipboard.
+- It does not send telemetry or use its own server.
+- It does not write images to disk or keep them in permanent storage.
+- Preview object URLs are released when images are removed or the tray is closed.
+- The normal upload is performed by LinkedIn after the user chooses to attach the files.
+- The extension never clicks LinkedIn's **Publish**, **Send**, or equivalent final-action buttons.
 
-Com Node.js 20+:
+The manifest declares that no data collection is required.
 
-```sh
+## How the handoff works
+
+For a publication batch, FrogPaste:
+
+1. Reads the image files synchronously while the paste event is active.
+2. Keeps the files in the in-page tray for review.
+3. Creates a unique virtual filename for each attachment to avoid collisions between clipboard files that are all named image.png.
+4. Adds the files to a DataTransfer object.
+5. Assigns the resulting FileList to LinkedIn's compatible file input.
+6. Dispatches the normal change event and lets LinkedIn handle the upload.
+
+The image bytes are not changed during this process. The unique names are only a compatibility measure.
+
+## Validation status
+
+The project currently has:
+
+- **31 passing tests** covering file detection, MIME compatibility, consecutive pastes, multi-image batches, modal mounting, outside-click protection, delayed file inputs, tab switching, removal, cancellation, and related edge cases;
+- **1 environment-limited clipboard test skipped**, because the headless environment cannot reliably retain a real operating-system clipboard image;
+- Firefox browser tests running against local fixtures with intercepted page traffic.
+
+These tests verify the extension's routing and file handoff logic. They do not use an authenticated LinkedIn account and are not a substitute for validation on the live site.
+
+## Running the tests
+
+Node.js 20 or newer is recommended.
+
+Core tests:
+
+~~~sh
 node --test tests/core.test.cjs
-```
+~~~
 
-Para os testes do Firefox:
+Full local Firefox fixture suite:
 
-```sh
+~~~sh
 npm install --no-save playwright
 npx playwright install firefox
 node --test tests/core.test.cjs tests/browser.test.cjs
-```
+~~~
 
-`FROGPASTE_CONTAINER_TEST=1` é uma opção exclusiva para testes em contêiner descartável. Não faz parte da extensão nem altera o Firefox do usuário.
+For disposable container environments, the browser suite can be run with:
 
-Para testar manualmente sem enviar nada, extraia o ZIP e abra `tests/manual.html`. A página usa os mesmos scripts, mas não reproduz o isolamento de uma extensão nem o backend do LinkedIn.
+~~~sh
+FROGPASTE_CONTAINER_TEST=1 node --test tests/core.test.cjs tests/browser.test.cjs
+~~~
 
-## Conteúdo do pacote
+The manual fixture is available at **tests/manual.html**. It demonstrates the shared scripts locally, but it does not reproduce Firefox extension isolation or LinkedIn's backend.
 
-- `manifest.json`: extensão Firefox Manifest V3, sem dependências de execução.
-- `core.js`: extração, validação e nomes virtuais dos arquivos.
-- `tray.js`: bandeja com miniaturas, remoção e botão de anexar.
-- `content.js`: reconhecimento da área de edição e entrega ao seletor.
-- `tests/core.test.cjs`, `tests/browser.test.cjs`, `tests/manual.html`: testes e demonstração local.
+## Project structure
 
-## Referências técnicas
+| File | Purpose |
+| --- | --- |
+| **manifest.json** | Firefox Manifest V3 metadata, permissions, and content-script registration. |
+| **core.js** | Clipboard image extraction, MIME validation, and unique attachment names. |
+| **tray.js** | Shadow-DOM image tray, thumbnails, removal, cancellation, and batch attachment. |
+| **content.js** | LinkedIn composer detection, paste routing, file-input handoff, and lifecycle handling. |
+| **tests/core.test.cjs** | Unit tests for clipboard and file-handling logic. |
+| **tests/browser.test.cjs** | Firefox fixture tests for DOM integration and event behavior. |
+| **tests/manual.html** | Local manual demonstration page. |
 
-- https://developer.mozilla.org/en-US/docs/Web/API/ClipboardEvent/clipboardData
-- https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/files
-- https://developer.mozilla.org/en-US/docs/Web/API/DataTransferItemList/add
+There are no runtime dependencies or build steps. The JavaScript and manifest files are included as readable source, and the ZIP/XPI is only a package for Firefox to install.
