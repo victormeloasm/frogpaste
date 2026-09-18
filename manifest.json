@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "FrogPaste for LinkedIn",
+  "version": "0.4.0",
+  "description": "Cole imagens do clipboard nos anexos do LinkedIn com Ctrl+V.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "frogpaste-linkedin@porquinho.local",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  },
+  "host_permissions": ["https://www.linkedin.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/*"],
+      "js": ["core.js", "tray.js", "content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FrogPaste 0.4.0 — teste local</title>
+<style>
+  :root {color-scheme:light dark;font:16px/1.5 system-ui,sans-serif}
+  body {max-width:920px;margin:40px auto;padding:0 22px 100px}
+  h1 {font-size:30px;margin-bottom:8px}
+  h2 {font-size:19px}
+  section {border:1px solid #8886;border-radius:14px;padding:18px 22px;margin:18px 0}
+  textarea,[contenteditable] {box-sizing:border-box;width:100%;min-height:74px;border:1px solid #8888;border-radius:8px;padding:12px;font:inherit;margin:8px 0;background:transparent}
+  button {padding:8px 14px;font:inherit;border:1px solid #8888;border-radius:8px;cursor:pointer}
+  pre {white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}
+  small {opacity:.8}
+</style>
+<h1>🐸 FrogPaste 0.4.0 — teste local</h1>
+<p>Copie e cole uma imagem, depois outra. Cada cartão registra os lotes recebidos e acumula os anexos, como um editor de mensagens. Também aceita um clipboard com vários arquivos de imagem. Nada é enviado à rede.</p>
+<p>Esta página reproduz campos de formulário para teste. Ela não reproduz o site real do LinkedIn.</p>
+
+<section class="msg-form" id="conversation-one">
+  <h2>Conversa A · qualquer imagem</h2>
+  <textarea aria-label="Conversa A" placeholder="Cole uma imagem aqui"></textarea>
+  <input type="file" accept="image/*" multiple hidden>
+  <button type="button" data-clear>Limpar anexos</button>
+  <pre>Nenhum arquivo.</pre>
+</section>
+
+<section class="msg-form" id="conversation-two">
+  <h2>Conversa B · JPEG, PNG ou GIF</h2>
+  <textarea aria-label="Conversa B" placeholder="O anexo deve chegar aqui, não à conversa A"></textarea>
+  <input type="file" accept="image/jpeg,image/png,image/gif" multiple hidden>
+  <button type="button" data-clear>Limpar anexos</button>
+  <pre>Nenhum arquivo.</pre>
+</section>
+
+<section class="comments-comment-box" id="comment">
+  <h2>Comentário · campo que aceita uma imagem por seleção</h2>
+  <div class="comments-comment-texteditor"><div contenteditable="true" aria-label="Comentário" role="textbox"></div></div>
+  <input type="file" accept="image/*" hidden>
+  <button type="button" data-clear>Limpar anexos</button>
+  <pre>Nenhum arquivo.</pre>
+</section>
+
+<section class="share-box" id="late-input">
+  <h2>Publicação · seletor criado depois</h2>
+  <div contenteditable="true" aria-label="Publicação" role="textbox"></div>
+  <button type="button" id="create-input">Adicionar imagem</button>
+  <button type="button" data-clear>Limpar anexos</button>
+  <pre>Cole várias imagens, clique em “Anexar todas” na bandeja e depois em “Adicionar imagem” neste cartão.</pre>
+</section>
+
+<small>Não é necessário limpar o seletor entre colagens. “Limpar anexos” zera somente esta demonstração. Texto comum deve continuar sendo colado normalmente.</small>
+<script src="../core.js"></script>
+<script src="../tray.js"></script>
+<script src="../content.js"></script>
+<script>
+  "use strict";
+  const received = new WeakMap();
+  document.addEventListener("change", async event => {
+    if (event.target.type !== "file") return;
+    const field = event.target;
+    const files = Array.from(field.files);
+    const scope = field.closest("section");
+    const batches = received.get(scope) || [];
+    batches.push(files);
+    received.set(scope, batches);
+    const lines = await Promise.all(batches.flat().map(async file => {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const start = Array.from(bytes.slice(0, 16), byte => byte.toString(16).padStart(2, "0")).join(" ");
+      return file.name + " | " + (file.type || "MIME vazio") + " | " + file.size + " bytes\nInício: " + start;
+    }));
+    scope.querySelector("pre").textContent = batches.length + " lote(s), " + batches.flat().length + " arquivo(s) recebido(s).\n\n" + lines.join("\n\n");
+  });
+  document.querySelectorAll("[data-clear]").forEach(button => button.addEventListener("click", () => {
+    const scope = button.closest("section");
+    received.delete(scope);
+    scope.querySelectorAll('input[type="file"]').forEach(field => { field.value = ""; });
+    scope.querySelector("pre").textContent = "Nenhum arquivo.";
+  }));
+  document.getElementById("create-input").addEventListener("click", () => {
+    const scope = document.getElementById("late-input");
+    let field = scope.querySelector('input[type="file"]');
+    if (!field) {
+      field = document.createElement("input");
+      field.type = "file";
+      field.accept = "image/*";
+      field.multiple = true;
+      field.hidden = true;
+      scope.append(field);
+    }
+    field.click();
+  });
+</script>
+</html>
